@@ -32,5 +32,5 @@ app.use("/api/products", productsRouter);
 
 const PORT = 5000;
 app.listen(PORT, () => {
-  console.log(`server running on ${process.env.DB_HOST}:${PORT}`);
+  console.log(`server running on ${PORT}`);
 });
