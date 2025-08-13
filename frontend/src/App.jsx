@@ -12,6 +12,7 @@ export default function App() {
   const [sortBy, setSortBy] = useState("name");
   const [order, setOrder] = useState("asc");
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   const loadProducts = async () => {
     try {
@@ -37,91 +38,107 @@ export default function App() {
         await api.post("/products", payload);
       }
       setEditing(null);
+      setShowForm(false);
       await loadProducts();
     } catch (e) {
-      alert(e?.response?.data?.error || e.message);
+      setError(e?.response?.data?.error || e.message);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       await api.delete(`/products/${id}`);
       await loadProducts();
     } catch (e) {
-      alert(e?.response?.data?.error || e.message);
+      setError(e?.response?.data?.error || e.message);
     }
   };
 
-  const filteredSorted = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    const filtered = q
-      ? products.filter(
-          (p) =>
-            (p.name || "").toLowerCase().includes(q) ||
-            (p.description || "").toLowerCase().includes(q),
-        )
-      : products.slice();
-
-    filtered.sort((a, b) => {
-      const A = a[sortBy],
-        B = b[sortBy];
-      let comp = 0;
-      if (typeof A === "string") comp = A.localeCompare(B);
-      else comp = Number(A) - Number(B);
-      return order === "asc" ? comp : -comp;
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let filtered = products.filter(
+      (p) =>
+        p.name.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase())
+    );
+    filtered = filtered.sort((a, b) => {
+      if (sortBy === "name") {
+        return order === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else if (sortBy === "price") {
+        return order === "asc" ? a.price - b.price : b.price - a.price;
+      } else if (sortBy === "stocks") {
+        return order === "asc" ? a.stocks - b.stocks : b.stocks - a.stocks;
+      }
+      return 0;
     });
-
     return filtered;
   }, [products, search, sortBy, order]);
 
   return (
-    <div className="container py-4">
-      <header className="mb-4">
-        <h2 className="fw-bold">Product Manager</h2>
-        <p className="text-muted mb-0">
-          Add, search, sort, edit, and delete products easily.
-        </p>
-      </header>
+    <div className="min-vh-100 d-flex flex-column bg-gradient-to-br from-gray-50 to-blue-100">
+      <div className="flex-grow-1 d-flex align-items-center justify-content-center py-4">
+        <div className="w-100" style={{ maxWidth: '800px' }}>
+          <div className="bg-white rounded shadow-lg p-4 p-md-5 mx-2">
+            <h1 className="mb-4 text-center fw-bold text-primary" style={{ fontSize: '2rem' }}>Product Management</h1>
+            {error && (
+              <div className="alert alert-danger text-center mb-3">{error}</div>
+            )}
+            <div className="mb-4">
+              <SearchSortBar
+                search={search}
+                setSearch={setSearch}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                order={order}
+                setOrder={setOrder}
+              />
+            </div>
+            <div className="mb-4">
+              <ProductList
+                items={filteredProducts}
+                onEdit={(prod) => { setEditing(prod); setShowForm(true); }}
+                onDelete={handleDelete}
+                loading={loading}
+              />
+            </div>
+            <div className="d-flex justify-content-end">
+              <button
+                className="btn btn-primary px-4 py-2 fw-semibold shadow"
+                onClick={() => { setEditing(null); setShowForm(true); }}
+              >
+                + Add Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {error && (
-        <div
-          className="alert alert-danger d-flex justify-content-between align-items-center"
-          role="alert"
-        >
-          <div>{error}</div>
-          <button className="btn-close" onClick={() => setError("")} />
+      {/* Bootstrap Modal for Add/Update Product */}
+      {showForm && (
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content p-2 p-md-4">
+              <div className="modal-header">
+                <h5 className="modal-title">{editing ? 'Update Product' : 'Add Product'}</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowForm(false)}></button>
+              </div>
+              <div className="modal-body">
+                <ProductForm
+                  onSave={handleSave}
+                  onCancel={() => setShowForm(false)}
+                  editing={editing}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="mb-3">
-        <SearchSortBar
-          search={search}
-          setSearch={setSearch}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          order={order}
-          setOrder={setOrder}
-        />
-      </div>
-
-      <div className="mb-3">
-        <ProductForm
-          editing={editing}
-          onSave={handleSave}
-          onCancel={() => setEditing(null)}
-        />
-      </div>
-
-      <ProductList
-        items={filteredSorted}
-        onEdit={(p) => setEditing(p)}
-        onDelete={handleDelete}
-        loading={loading}
-      />
-
-      <footer className="pt-4 text-center text-muted">
-        <small>Built with React + Bootstrap • Responsive & simple</small>
+      <footer className="mt-auto py-3 text-center text-muted bg-transparent">
+        <small>Made with ❤️ for interview</small>
       </footer>
     </div>
   );
