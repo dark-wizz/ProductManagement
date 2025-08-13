@@ -5,14 +5,10 @@ export default function SearchSortBar({
   setSortBy,
   order,
   setOrder,
-  minPrice,
-  setMinPrice,
-  maxPrice,
-  setMaxPrice,
 }) {
   return (
     <div className="row g-2 align-items-end bg-light rounded p-3 mb-2 shadow-sm">
-      <div className="col-md-5">
+      <div className="col-md-7">
         <label className="form-label">Search</label>
         <div className="input-group">
           <input
@@ -27,28 +23,6 @@ export default function SearchSortBar({
         </div>
       </div>
       <div className="col-md-3">
-        <label className="form-label">Price Range</label>
-        <div className="input-group">
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Min"
-            value={minPrice}
-            min={0}
-            onChange={e => setMinPrice(e.target.value)}
-          />
-          <span className="input-group-text">-</span>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Max"
-            value={maxPrice}
-            min={0}
-            onChange={e => setMaxPrice(e.target.value)}
-          />
-        </div>
-      </div>
-      <div className="col-md-2">
         <label className="form-label">Sort by</label>
         <select
           className="form-select"

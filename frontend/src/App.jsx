@@ -13,8 +13,6 @@ export default function App() {
   const [order, setOrder] = useState("asc");
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
 
   const loadProducts = async () => {
     try {
@@ -61,14 +59,11 @@ export default function App() {
   const filteredProducts = useMemo(() => {
     let filtered = products.filter((p) => {
       const searchText = search.trim().toLowerCase();
-      const matchesSearch =
+      return (
         !searchText ||
         p.name.toLowerCase().includes(searchText) ||
-        p.description.toLowerCase().includes(searchText);
-      const priceOk =
-        (minPrice === "" || p.price >= Number(minPrice)) &&
-        (maxPrice === "" || p.price <= Number(maxPrice));
-      return matchesSearch && priceOk;
+        p.description.toLowerCase().includes(searchText)
+      );
     });
     filtered = filtered.sort((a, b) => {
       if (sortBy === "name") {
@@ -112,10 +107,6 @@ export default function App() {
                 setSortBy={setSortBy}
                 order={order}
                 setOrder={setOrder}
-                minPrice={minPrice}
-                setMinPrice={setMinPrice}
-                maxPrice={maxPrice}
-                setMaxPrice={setMaxPrice}
               />
             </div>
             <div className="mb-4">
