@@ -13,6 +13,8 @@ export default function App() {
   const [order, setOrder] = useState("asc");
   const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
 
   const loadProducts = async () => {
     try {
@@ -57,11 +59,17 @@ export default function App() {
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let filtered = products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.description.toLowerCase().includes(search.toLowerCase())
-    );
+    let filtered = products.filter((p) => {
+      const searchText = search.trim().toLowerCase();
+      const matchesSearch =
+        !searchText ||
+        p.name.toLowerCase().includes(searchText) ||
+        p.description.toLowerCase().includes(searchText);
+      const priceOk =
+        (minPrice === "" || p.price >= Number(minPrice)) &&
+        (maxPrice === "" || p.price <= Number(maxPrice));
+      return matchesSearch && priceOk;
+    });
     filtered = filtered.sort((a, b) => {
       if (sortBy === "name") {
         return order === "asc"
@@ -81,8 +89,18 @@ export default function App() {
     <div className="min-vh-100 d-flex flex-column bg-gradient-to-br from-gray-50 to-blue-100">
       <div className="flex-grow-1 d-flex align-items-center justify-content-center py-4">
         <div className="w-100" style={{ maxWidth: '800px' }}>
-          <div className="bg-white rounded shadow-lg p-4 p-md-5 mx-2">
-            <h1 className="mb-4 text-center fw-bold text-primary" style={{ fontSize: '2rem' }}>Product Management</h1>
+          <div className="bg-white rounded shadow-lg p-4 p-md-5 mx-2 position-relative">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h1 className="fw-bold text-primary mb-0" style={{ fontSize: '2rem' }}>Product Management</h1>
+              <button
+                className="btn btn-success px-4 py-2 fw-semibold shadow rounded-pill d-flex align-items-center gap-2"
+                style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.5px' }}
+                onClick={() => { setEditing(null); setShowForm(true); }}
+              >
+                <span className="bi bi-plus-circle" style={{ fontSize: '1.2em' }}></span>
+                Add Product
+              </button>
+            </div>
             {error && (
               <div className="alert alert-danger text-center mb-3">{error}</div>
             )}
@@ -94,6 +112,10 @@ export default function App() {
                 setSortBy={setSortBy}
                 order={order}
                 setOrder={setOrder}
+                minPrice={minPrice}
+                setMinPrice={setMinPrice}
+                maxPrice={maxPrice}
+                setMaxPrice={setMaxPrice}
               />
             </div>
             <div className="mb-4">
@@ -103,14 +125,6 @@ export default function App() {
                 onDelete={handleDelete}
                 loading={loading}
               />
-            </div>
-            <div className="d-flex justify-content-end">
-              <button
-                className="btn btn-primary px-4 py-2 fw-semibold shadow"
-                onClick={() => { setEditing(null); setShowForm(true); }}
-              >
-                + Add Product
-              </button>
             </div>
           </div>
         </div>

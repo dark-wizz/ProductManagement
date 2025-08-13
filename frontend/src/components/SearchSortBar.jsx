@@ -5,19 +5,50 @@ export default function SearchSortBar({
   setSortBy,
   order,
   setOrder,
+  minPrice,
+  setMinPrice,
+  maxPrice,
+  setMaxPrice,
 }) {
   return (
-    <div className="row g-2 align-items-end">
-      <div className="col-md-6">
+    <div className="row g-2 align-items-end bg-light rounded p-3 mb-2 shadow-sm">
+      <div className="col-md-5">
         <label className="form-label">Search</label>
-        <input
-          className="form-control"
-          placeholder="Search by name or description"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div className="input-group">
+          <input
+            className="form-control"
+            placeholder="Search by name or description"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          {search && (
+            <button className="btn btn-outline-secondary" type="button" onClick={() => setSearch("")}>Clear</button>
+          )}
+        </div>
       </div>
       <div className="col-md-3">
+        <label className="form-label">Price Range</label>
+        <div className="input-group">
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Min"
+            value={minPrice}
+            min={0}
+            onChange={e => setMinPrice(e.target.value)}
+          />
+          <span className="input-group-text">-</span>
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Max"
+            value={maxPrice}
+            min={0}
+            onChange={e => setMaxPrice(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="col-md-2">
         <label className="form-label">Sort by</label>
         <select
           className="form-select"
@@ -26,10 +57,9 @@ export default function SearchSortBar({
         >
           <option value="name">Name</option>
           <option value="price">Price</option>
-          <option value="stocks">Stocks</option>
         </select>
       </div>
-      <div className="col-md-3">
+      <div className="col-md-2">
         <label className="form-label">Order</label>
         <select
           className="form-select"
